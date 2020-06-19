@@ -31,7 +31,7 @@ Ghi ra tập csv
 - Mở google sheet bất kì (mới hoặc cũ):
     - Chọn `Tệp / File` -> `Nhập / Import` -> `Tải lên / Upload` -> Chọn tập tin `export_shop.csv` -> chọn theo hình đính kèm
 
-![google sheet](ggsheet-import.png)  
+    ![google sheet](ggsheet-import.png)  
 
     - Tải mẫu excel từ shopee: https://banhang.shopee.vn/portal/product/import/download
     - Copy toàn bộ các hàng và cột từ google sheet vào excel của shopee mà không thay đổi bất kì dữ liệu có sẵn nào
