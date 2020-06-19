@@ -10,6 +10,7 @@ from requests import get
 from data import *
 
 
+# Lấy product id trong mô tả. Nên thay đổi cho phù hợp
 def get_product_id(data):
     rs = re.findall('Mã sản phẩm: (\d+)', data.get('description', ''))
     if len(rs) > 0:
@@ -17,6 +18,7 @@ def get_product_id(data):
     return data.get('itemid', 0)
 
 
+# Lấy ngành hàng
 def get_category(data):
     for category in data.get('categories', []):
         if category['no_sub']:
@@ -24,13 +26,14 @@ def get_category(data):
     return 'ERROR'
 
 
+# Lấy 1 trong 2 giá: trước giảm giá hay giá gốc. Tuỳ vào điều kiện trong tập tin data.py
 def get_price(data):
     if PRICE_BEFORE_DISCOUNT:
         return data['price_before_discount']
     return data['price']
 
 
-# Xử lý các hình ảnh phụ
+# Xáo trộn hình ảnh sản phẩm
 def append_images(data_formated, raw_data):
     temp = 1
     mix_array = raw_data['images']
@@ -41,30 +44,17 @@ def append_images(data_formated, raw_data):
         if mix_array[index] == raw_data['image']:
             continue
 
-        data_formated[getattr(COLUMN_DEFAULT, f'hinh{temp}')] = link_shopee(mix_array[index])
+        data_formated[getattr(COLUMN_DEFAULT, f'hinh{temp}')] = link_img_shopee(mix_array[index])
         temp = temp + 1
 
 
-def print_json(data):
-    print(json.dumps(data, indent=4))
-
-
 # Request into shopee get json data
-def get_detail_from_shopee(item_id):
-    url = f'https://shopee.vn/api/v2/item/get?itemid={item_id}&shopid={SHOP_ID}'
-    custom_headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0',
-        'Accept': '*/*',
-        'Accept-Language': 'vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3',
-        'Accept-Encoding': 'gzip, deflate',
-        'Referer': 'https://shopee.vn/product/12874043/1540002479',
-        'X-Shopee-Language': 'vi',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-API-SOURCE': 'pc'
-    }
-    return get(url, headers=custom_headers).json()['item']
+def get_detail_from_shopee(shop_id, item_id):
+    url = f'https://shopee.vn/api/v2/item/get?itemid={item_id}&shopid={shop_id}'
+    return get(url, headers=FAKE_HEADER).json()['item']
 
 
+# Chọn số SKU của phân loại ngẫu nhiên
 def random_item_id():
     n = ''.join([str(random.randrange(0, 9)) for i in range(10)])
     while n in UNIQUE_LIST:
@@ -74,7 +64,7 @@ def random_item_id():
     return n
 
 
-# tach cac PHAN LOAI thanh nhieu documents
+# Tach cac PHAN LOAI thanh nhieu documents
 def split_by_variation(raw_data):
     variations = []
     for tier_variations in raw_data['tier_variations']:
@@ -95,6 +85,7 @@ def split_by_variation(raw_data):
     return variations
 
 
+# Ghi ra tập tin kết quả
 def write_to_csv(data):
     # convert json to list row
     rows = []
@@ -110,10 +101,12 @@ def write_to_csv(data):
             writer.writerow(row)
 
 
+# Chỉnh sửa tên sản phẩm
 def modify_name_product(name):
     return f"{MODIFY['PREFIX_NAME']} {name} {MODIFY['SUFFIX_NAME']}"
 
 
+# Chỉnh sửa mô tả sản phẩm
 def modify_description(text):
     return f"""
     {MODIFY['PREFIX_DESCRIPTION']}
@@ -127,12 +120,14 @@ def upload_image(hash):
     return hash
 
 
-def link_shopee(hash):
+# Link ảnh từ Shopee
+def link_img_shopee(hash):
     return f'http://cf.shopee.vn/file/{hash}'
 
 
-def crawling(item_id):
-    raw_data = get_detail_from_shopee(item_id)
+# Lấy thông tin của 1 sản phẩm
+def crawling(shop_id, item_id):
+    raw_data = get_detail_from_shopee(shop_id, item_id)
 
     # Phan du lieu chung cua 1 SAN PHAM
     data_formated = {
@@ -149,7 +144,7 @@ def crawling(item_id):
         COLUMN_DEFAULT.gia: 0,
         COLUMN_DEFAULT.kho: 0,
         COLUMN_DEFAULT.sku_phan_loai: '',
-        COLUMN_DEFAULT.anh_bia: link_shopee(raw_data['image']),
+        COLUMN_DEFAULT.anh_bia: link_img_shopee(raw_data['image']),
         COLUMN_DEFAULT.hinh1: '',
         COLUMN_DEFAULT.hinh2: '',
         COLUMN_DEFAULT.hinh3: '',
@@ -172,12 +167,7 @@ def crawling(item_id):
         COLUMN_DEFAULT.ps_product_pre_order_dts: PRE_ORDER
     }
 
-    ###
-    # if int(data_formated[COLUMN_DEFAULT.ma_san_pham]) not in include:
-    #     return ''
-    ###
-
-    # @todo: upload to another server | switch thứ tự
+    # @todo: upload to another server
     append_images(data_formated, raw_data)
 
     # Tách row theo phân loại
@@ -190,36 +180,43 @@ def crawling(item_id):
 
         # sử dụng ảnh cover làm ảnh phân loại
         if not temp[COLUMN_DEFAULT.hinh_anh_phan_loai]:
-            temp[COLUMN_DEFAULT.hinh_anh_phan_loai] = link_shopee(raw_data['image'])
+            temp[COLUMN_DEFAULT.hinh_anh_phan_loai] = link_img_shopee(raw_data['image'])
 
         results.append(temp)
 
     return results
 
 
-def get_item_onl():
-    url = f'https://shopee.vn/api/v2/search_items/?by=pop&limit=100&match_id={SHOP_ID}&newest=0&order=desc&page_type=shop&version=2'
-    custom_headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0',
-        'Accept': '*/*',
-        'Accept-Language': 'vi-VN,vi;q=0.8,en-US;q=0.5,en;q=0.3',
-        'Accept-Encoding': 'gzip, deflate',
-        'Referer': 'https://shopee.vn/tuhuucuong',
-        'X-Shopee-Language': 'vi',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-API-SOURCE': 'pc'
-    }
-    items = get(url, headers=custom_headers).json()['items']
+# Lấy toàn bộ sản phẩm từ 1 shop
+def get_item_onl(shop_id):
+    url = f'https://shopee.vn/api/v2/search_items/?by=pop&limit=100&match_id={shop_id}&newest=0&order=desc&page_type=shop&version=2'
+    items = get(url, headers=FAKE_HEADER).json()['items']
 
     data_to_export = []
     for item in items:
-        temp = crawling(item['itemid'])
+        temp = crawling(shop_id, item['itemid'])
         if temp == '': continue
         data_to_export = data_to_export + temp
 
     write_to_csv(data_to_export)
 
 
+def get_shopid(link):
+    shop_name = re.findall('https://shopee.vn/(.*)/?', link)
+    if len(shop_name) == 0:
+        print('Đường dẫn shop không tồn tại username')
+        return False
+
+    print(f'Shop name: {shop_name}')
+    url = f'https://shopee.vn/api/v2/shop/get?username={shop_name[0]}'
+    res = get(url, headers=FAKE_HEADER).json()
+
+    return res.get('data', {}).get('shopid', 0)
+
+
 if __name__ == '__main__':
+    link = input('Link shop: ')
     UNIQUE_LIST = []
-    get_item_onl()
+    shop_id = get_shopid(link)
+    if shop_id:
+        get_item_onl(shop_id)
