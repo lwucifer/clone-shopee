@@ -30,12 +30,10 @@ Ghi ra tập csv
 - Chạy công cụ: `python clone_shopee.py` sau đó nhập đường link shopee
 - Mở google sheet bất kì (mới hoặc cũ):
     - Chọn `Tệp / File` -> `Nhập / Import` -> `Tải lên / Upload` -> Chọn tập tin `export_shop.csv` -> chọn theo hình đính kèm
-
-    ![google sheet](ggsheet-import.png)  
-
     - Tải mẫu excel từ shopee: https://banhang.shopee.vn/portal/product/import/download
     - Copy toàn bộ các hàng và cột từ google sheet vào excel của shopee mà không thay đổi bất kì dữ liệu có sẵn nào
     - Tải tập tin excel mới lên shop: https://banhang.shopee.vn/portal/product/import/upload
     - Chọn `cập nhật hàng loạt` để thay đổi 1 số trường giá trị cho toàn bộ sản phẩm
     - Vào từng sản phẩm để chỉnh sửa ảnh bìa hoặc ảnh phân loại (nếu chưa có)
+    ![google sheet](ggsheet-import.png)  
 - Hoàn thành
