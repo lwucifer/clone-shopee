@@ -1,3 +1,6 @@
+Đây là kết quả: https://shopee.vn/sago.menu 
+Shop chuyên bán dép da, dép PU thương hiệu Hữu Cường chính hãng
+
 **Chức năng:**
 
 Input đường dẫn đến shop: trả về toàn bộ (default 100) sản phẩm của shop
@@ -23,7 +26,8 @@ Ghi ra tập csv
     
 - Mở google sheet bất kì (mới hoặc cũ):
     - Chọn `Tệp / File` -> `Nhập / Import` -> `Tải lên / Upload` -> Chọn tập tin `export_shop.csv` -> chọn theo hình đính kèm
-	![google sheet](ggsheet-import.png)
+
+![google sheet](ggsheet-import.png)
     - Tải mẫu excel từ shopee: https://banhang.shopee.vn/portal/product/import/download
     - Copy toàn bộ các hàng và cột từ google sheet vào excel của shopee mà không thay đổi bất kì dữ liệu có sẵn nào
     - Tải tập tin excel mới lên shop: https://banhang.shopee.vn/portal/product/import/upload
