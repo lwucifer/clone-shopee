@@ -18,6 +18,7 @@ Ghi ra tập csv
 
 **Các bước thực hiện**
 
+- Google tìm "Hướng dẫn cài đặt python windows" rồi làm theo.
 - Lấy đường dẫn đến Shop 
 - Thay đổi 1 số cấu hình bên trong file `data.py`:
     - DELIVERY\_DEFAULT: đơn vị vận chuyển (tắt/mở)
@@ -25,6 +26,8 @@ Ghi ra tập csv
     - MODIFY: thông tin cần thay đổi cho tiêu đề và mô tả
     - EXPORT\_FILENAME: tên tập tin kết quả (mặc định export\_shop.csv)
     
+- Chạy dòng lệnh để cài đặt thư viện: `python -m pip install -r requirements.txt`
+- Chạy công cụ: `python clone_shopee.py` sau đó nhập đường link shopee
 - Mở google sheet bất kì (mới hoặc cũ):
     - Chọn `Tệp / File` -> `Nhập / Import` -> `Tải lên / Upload` -> Chọn tập tin `export_shop.csv` -> chọn theo hình đính kèm
 
